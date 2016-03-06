@@ -80,6 +80,19 @@ def login(request):
 		return JsonResponse(context)
 
 
+def logout(request):
+	logout(request)
+	context = {
+		"logged out":"you have been logged out"
+		}
+
+	return JsonResponse(context)
+
+
+def create(request):
+	data = json.loads(request.body.decode())
+	print(data)
+
 
 
 
