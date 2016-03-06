@@ -27,6 +27,7 @@ def register(request):
 		user = User.objects.get(username=username)
 	except User.DoesNotExist:
 		user = User.objects.create_user(username, password)
+		user.save()
 
 	# user_list = models.User.object.filter(username=username)
 	# if len(user_list) == 0:
@@ -45,13 +46,30 @@ def register(request):
 	# send back some json response
 
 def login(request):
-		data = json.loads(request.body.decode(),'utf-8')
+	data = json.loads(request.body.decode(),'utf-8')
+	username= data['username']
+	password= data['password']
+	context={}
 
 	
 	try:
 		user = User.objects.get(username=data['username'])
-		if user.password== request.POST['password']:
-			request.session['user_id'] =user_id
+		if user.password== data['password']:
+			request.session['user_id'] = user.id
+			context={
+			"logged":"you are now logged in"
+			}
+			
+			return JsonResponse(context)
+
+
+	except User.DoesNotExist:
+
+		context = {
+		"notlogged":"username/password does not match"
+		}
+
+	return JsonResponse(context)
 
 
 
