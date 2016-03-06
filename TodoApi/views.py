@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-
+from django.contrib.auth import authenticate,login
 import json
 from django.http import HttpResponse
 import uuid
@@ -46,22 +46,30 @@ def register(request):
 	# send back some json response
 
 def login(request):
+	#load data 
 	data = json.loads(request.body.decode(),'utf-8')
 	username= data['username']
 	password= data['password']
-	context={}
-
 	
 	try:
-		user = User.objects.get(username=data['username'])
-		if user.password== data['password']:
-			request.session['user_id'] = user.id
-			context={
-			"logged":"you are now logged in"
-			}
-			
-			return JsonResponse(context)
+		#get username
+		user = authenticate(username=username,password=password)
+		#if password matches that of our data
+		if user is not None:
+			#create a user session
+			if user.is_active:
+				login(request,user)
+				#dictionary to return they logged in
+				context={
+				"logged":"you are now logged in"
+				}
+				
+				return JsonResponse(context)
 
+			else:
+				return HttpResponse("account disables.")
+		else:
+			return HttpResponse("Invalid login details supplied.")
 
 	except User.DoesNotExist:
 
@@ -69,7 +77,10 @@ def login(request):
 		"notlogged":"username/password does not match"
 		}
 
-	return JsonResponse(context)
+		return JsonResponse(context)
+
+
+
 
 
 
